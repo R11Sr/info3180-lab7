@@ -5,9 +5,11 @@ Werkzeug Documentation:  https://werkzeug.palletsprojects.com/
 This file creates your application.
 """
 
+from crypt import methods
 from app import app
-from flask import render_template, request, jsonify, send_file
+from flask import render_template, request, jsonify, send_file,flash,redirect
 import os
+from app.forms import UploadForm
 
 
 ###
@@ -17,6 +19,46 @@ import os
 @app.route('/')
 def index():
     return jsonify(message="This is the beginning of our API")
+
+@app.route('/api/upload',methods=['POST'])
+def upload():
+    uploadForm = UploadForm()
+
+    if uploadForm.validate():
+        description = uploadForm.description.data
+        photo = uploadForm.photo.data
+        if photo.filename == '':
+                flash('No selected Photo')
+                print("No selected Photo")
+                return redirect(request.url)
+        
+        photoname = secure_filename(photo.filename)
+        photo.save(str(os.path.join(app.config['UPLOADS_FOLDER'],photoname)))
+
+        return {
+            'message': "File upload complete",
+            'filename': f"{photoname}",
+            'description': f"{description}"
+        }
+    else:
+        error_arr =[]
+        errors = form_errors(uploadForm)
+
+        #loop over errors, created a JSON for each
+        for x in range(len(errors)):
+            obj = {f"{x}":errors[x]}
+            error_arr.appdend(obj)
+
+        return {
+            'errors': error_arr
+        }
+        
+        
+
+
+
+
+    
 
 
 ###
