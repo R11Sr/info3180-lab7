@@ -1,6 +1,6 @@
 <template>
   <div class="container col-md-8">
-    <form action="" method="post" enctype="multipart/form-data" @submit.prevent="uploadPhoto">
+    <form action="" method="post" id="uploadForm"  @submit.prevent="uploadPhoto">
 
       <!-- description -->
       <div class="fom-group pb-3">
@@ -30,19 +30,45 @@
 <script>
 export default {
   data(){
-      return {}
+      return {
+        csrf_token: ''
+      }
   },
+  created(){
+          this.getCsrfToken();
+        },
   methods:{
+       
       uploadPhoto(){
+          let uploadForm = document.getElementById('uploadForm');
+          let form_data = new FormData(uploadForm);
+
           fetch('/api/upload',{
-              method: 'POST'
-          }).then((response)=>{
+              method: 'POST',
+              body: form_data,
+              headers: {
+                    'X-CSRFToken': this.csrf_token
+                    }
+          })
+          .then((response)=>{
               return response.json();
-          }).then((data)=>{
+          })
+          .then((data)=>{
               console.log(data);
-          }).catch((error)=>{
+          })
+          .catch((error)=>{
               console.log(error);
           });
+      },
+      getCsrfToken(){
+          let self =this;
+          fetch('/api/csrf-token')
+          .then(response=>
+              response.json())          
+          .then(data=>{
+            self.csrf_token = data.csrf_token;
+          })
+
       }
   },
 };
