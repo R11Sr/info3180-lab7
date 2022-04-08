@@ -10,6 +10,7 @@ from app import app
 from flask import render_template, request, jsonify, send_file,flash,redirect
 import os
 from app.forms import UploadForm
+from werkzeug.utils import secure_filename
 
 
 ###
@@ -46,19 +47,15 @@ def upload():
 
         #loop over errors, created a JSON for each
         for x in range(len(errors)):
-            obj = {f"{x}":errors[x]}
-            error_arr.appdend(obj)
-
-        return {
-            'errors': error_arr
-        }
-        
-        
-
-
-
-
-    
+            obj = {
+                'id':f"{x}",
+                'error':errors[x]
+                }
+            error_arr.append(obj)
+            errs =jsonify(errors = error_arr)
+        # print(f'form errors: {jsonify.parse(errs)}' ) 
+        return jsonify(errors = error_arr)  
+                  
 
 
 ###
